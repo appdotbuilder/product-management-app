@@ -12,7 +12,7 @@ export const createProduct = async (input: CreateProductInput): Promise<Product>
         harga_beli: input.harga_beli.toString(), // Convert number to string for numeric column
         harga_jual: input.harga_jual.toString(), // Convert number to string for numeric column
         stok: input.stok, // Integer column - no conversion needed
-        deskripsi: input.deskripsi // Can be null
+        deskripsi: input.deskripsi // Nullable field
       })
       .returning()
       .execute();

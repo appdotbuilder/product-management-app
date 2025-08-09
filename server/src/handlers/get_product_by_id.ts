@@ -1,15 +1,13 @@
 import { db } from '../db';
 import { productsTable } from '../db/schema';
-import { type GetProductByIdInput, type Product } from '../schema';
 import { eq } from 'drizzle-orm';
+import { type GetProductByIdInput, type Product } from '../schema';
 
 export const getProductById = async (input: GetProductByIdInput): Promise<Product | null> => {
-  const { id } = input;
   try {
-    // Query product by ID
     const results = await db.select()
       .from(productsTable)
-      .where(eq(productsTable.id, id))
+      .where(eq(productsTable.id, input.id))
       .execute();
 
     if (results.length === 0) {
@@ -24,7 +22,7 @@ export const getProductById = async (input: GetProductByIdInput): Promise<Produc
       harga_jual: parseFloat(product.harga_jual) // Convert string back to number
     };
   } catch (error) {
-    console.error('Failed to fetch product by ID:', error);
+    console.error('Failed to get product by id:', error);
     throw error;
   }
 };

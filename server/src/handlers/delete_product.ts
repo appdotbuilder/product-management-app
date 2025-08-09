@@ -1,41 +1,26 @@
 import { db } from '../db';
 import { productsTable } from '../db/schema';
-import { type DeleteProductInput, type DeleteProductResponse } from '../schema';
 import { eq } from 'drizzle-orm';
+import { type DeleteProductInput, type DeleteProductResponse } from '../schema';
 
 export const deleteProduct = async (input: DeleteProductInput): Promise<DeleteProductResponse> => {
-  const { id } = input;
   try {
-    // First, check if the product exists
-    const existingProduct = await db.select()
-      .from(productsTable)
-      .where(eq(productsTable.id, id))
+    const result = await db.delete(productsTable)
+      .where(eq(productsTable.id, input.id))
+      .returning()
       .execute();
 
-    if (existingProduct.length === 0) {
+    if (result.length === 0) {
       return {
         success: false,
-        message: `Product with ID ${id} not found`
+        message: `Product with ID ${input.id} not found`
       };
     }
 
-    // Delete the product
-    const results = await db.delete(productsTable)
-      .where(eq(productsTable.id, id))
-      .returning({ id: productsTable.id })
-      .execute();
-
-    if (results.length > 0) {
-      return {
-        success: true,
-        message: `Product with ID ${id} deleted successfully`
-      };
-    } else {
-      return {
-        success: false,
-        message: `Failed to delete product with ID ${id}`
-      };
-    }
+    return {
+      success: true,
+      message: `Product with ID ${input.id} deleted successfully`
+    };
   } catch (error) {
     console.error('Product deletion failed:', error);
     throw error;

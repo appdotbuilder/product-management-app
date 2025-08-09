@@ -18,6 +18,13 @@ function App() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Display states for formatted price inputs
+  const [createDisplayHargaBeli, setCreateDisplayHargaBeli] = useState('');
+  const [createDisplayHargaJual, setCreateDisplayHargaJual] = useState('');
+
+  const [editDisplayHargaBeli, setEditDisplayHargaBeli] = useState('');
+  const [editDisplayHargaJual, setEditDisplayHargaJual] = useState('');
+
   // Form state for creating new products
   const [createFormData, setCreateFormData] = useState<CreateProductInput>({
     nama: '',
@@ -52,6 +59,22 @@ function App() {
     loadProducts();
   }, [loadProducts]);
 
+  // Helper functions for IDR formatting
+  const formatToIDR = (num: number | null): string => {
+    if (num === null || isNaN(num)) return '';
+    return new Intl.NumberFormat('id-ID', {
+      minimumFractionDigits: 0, // Ensure no trailing .00 for whole numbers
+      maximumFractionDigits: 2, // Limit to 2 decimal places after comma
+    }).format(num);
+  };
+
+  const parseIDR = (formattedString: string): number => {
+    if (!formattedString) return 0;
+    // Remove thousand separators (dots) and replace decimal comma with dot for parseFloat
+    const cleanedString = formattedString.replace(/\./g, '').replace(/,/g, '.');
+    return parseFloat(cleanedString) || 0;
+  };
+
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -66,6 +89,9 @@ function App() {
         stok: 0,
         deskripsi: null
       });
+      // Reset display states
+      setCreateDisplayHargaBeli('');
+      setCreateDisplayHargaJual('');
       setIsCreateDialogOpen(false);
     } catch (error) {
       console.error('Gagal membuat produk:', error);
@@ -113,6 +139,9 @@ function App() {
       stok: product.stok,
       deskripsi: product.deskripsi
     });
+    // Initialize display states with formatted values
+    setEditDisplayHargaBeli(formatToIDR(product.harga_beli));
+    setEditDisplayHargaJual(formatToIDR(product.harga_jual));
   };
 
   const formatCurrency = (amount: number) => {
@@ -193,17 +222,21 @@ function App() {
                   <Label htmlFor="create-harga-beli">Harga Beli</Label>
                   <Input
                     id="create-harga-beli"
-                    type="number"
-                    value={createFormData.harga_beli}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setCreateFormData((prev: CreateProductInput) => ({ 
-                        ...prev, 
-                        harga_beli: parseFloat(e.target.value) || 0 
-                      }))
-                    }
+                    type="text"
+                    value={createDisplayHargaBeli}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setCreateDisplayHargaBeli(e.target.value); // Update display with raw input
+                      setCreateFormData((prev: CreateProductInput) => ({
+                        ...prev,
+                        harga_beli: parseIDR(e.target.value), // Update actual numeric value
+                      }));
+                    }}
+                    onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                      const parsedValue = parseIDR(e.target.value);
+                      setCreateDisplayHargaBeli(formatToIDR(parsedValue)); // Format on blur
+                    }}
                     placeholder="0"
                     min="0"
-                    step="1000"
                     required
                   />
                 </div>
@@ -212,17 +245,21 @@ function App() {
                   <Label htmlFor="create-harga-jual">Harga Jual</Label>
                   <Input
                     id="create-harga-jual"
-                    type="number"
-                    value={createFormData.harga_jual}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setCreateFormData((prev: CreateProductInput) => ({ 
-                        ...prev, 
-                        harga_jual: parseFloat(e.target.value) || 0 
-                      }))
-                    }
+                    type="text"
+                    value={createDisplayHargaJual}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setCreateDisplayHargaJual(e.target.value); // Update display with raw input
+                      setCreateFormData((prev: CreateProductInput) => ({
+                        ...prev,
+                        harga_jual: parseIDR(e.target.value), // Update actual numeric value
+                      }));
+                    }}
+                    onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                      const parsedValue = parseIDR(e.target.value);
+                      setCreateDisplayHargaJual(formatToIDR(parsedValue)); // Format on blur
+                    }}
                     placeholder="0"
                     min="0"
-                    step="1000"
                     required
                   />
                 </div>
@@ -488,17 +525,21 @@ function App() {
                   <Label htmlFor="edit-harga-beli">Harga Beli</Label>
                   <Input
                     id="edit-harga-beli"
-                    type="number"
-                    value={editFormData.harga_beli || 0}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setEditFormData((prev: UpdateProductInput) => ({ 
-                        ...prev, 
-                        harga_beli: parseFloat(e.target.value) || 0 
-                      }))
-                    }
+                    type="text"
+                    value={editDisplayHargaBeli}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setEditDisplayHargaBeli(e.target.value); // Update display with raw input
+                      setEditFormData((prev: UpdateProductInput) => ({
+                        ...prev,
+                        harga_beli: parseIDR(e.target.value), // Update actual numeric value
+                      }));
+                    }}
+                    onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                      const parsedValue = parseIDR(e.target.value);
+                      setEditDisplayHargaBeli(formatToIDR(parsedValue)); // Format on blur
+                    }}
                     placeholder="0"
                     min="0"
-                    step="1000"
                   />
                 </div>
                 
@@ -506,17 +547,21 @@ function App() {
                   <Label htmlFor="edit-harga-jual">Harga Jual</Label>
                   <Input
                     id="edit-harga-jual"
-                    type="number"
-                    value={editFormData.harga_jual || 0}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setEditFormData((prev: UpdateProductInput) => ({ 
-                        ...prev, 
-                        harga_jual: parseFloat(e.target.value) || 0 
-                      }))
-                    }
+                    type="text"
+                    value={editDisplayHargaJual}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setEditDisplayHargaJual(e.target.value); // Update display with raw input
+                      setEditFormData((prev: UpdateProductInput) => ({
+                        ...prev,
+                        harga_jual: parseIDR(e.target.value), // Update actual numeric value
+                      }));
+                    }}
+                    onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                      const parsedValue = parseIDR(e.target.value);
+                      setEditDisplayHargaJual(formatToIDR(parsedValue)); // Format on blur
+                    }}
                     placeholder="0"
                     min="0"
-                    step="1000"
                   />
                 </div>
               </div>
