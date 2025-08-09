@@ -38,17 +38,3 @@ export const updateProductInputSchema = z.object({
 });
 
 export type UpdateProductInput = z.infer<typeof updateProductInputSchema>;
-
-// Input schema for getting product by ID
-export const getProductByIdInputSchema = z.object({
-  id: z.number()
-});
-
-export type GetProductByIdInput = z.infer<typeof getProductByIdInputSchema>;
-
-// Input schema for deleting product
-export const deleteProductInputSchema = z.object({
-  id: z.number()
-});
-
-export type DeleteProductInput = z.infer<typeof deleteProductInputSchema>;

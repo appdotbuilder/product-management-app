@@ -78,10 +78,14 @@ function App() {
     setIsLoading(true);
     try {
       const response = await trpc.updateProduct.mutate(editFormData);
-      setProducts((prev: Product[]) => 
-        prev.map((p: Product) => p.id === response.id ? response : p)
-      );
-      setEditingProduct(null);
+      if (response) {
+        setProducts((prev: Product[]) => 
+          prev.map((p: Product) => p.id === response.id ? response : p)
+        );
+        setEditingProduct(null);
+      } else {
+        console.error('Produk tidak ditemukan atau tidak berhasil diupdate');
+      }
     } catch (error) {
       console.error('Gagal mengupdate produk:', error);
     } finally {
@@ -133,7 +137,7 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">📦 Manajemen Produk</h1>
@@ -148,7 +152,7 @@ function App() {
               ➕ Tambah Produk
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md mobile-dialog">
             <DialogHeader>
               <DialogTitle>Tambah Produk Baru</DialogTitle>
             </DialogHeader>
@@ -333,7 +337,8 @@ function App() {
               </p>
             </div>
           ) : (
-            <Table>
+            <div className="mobile-table-responsive">
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nama Produk</TableHead>
@@ -422,6 +427,7 @@ function App() {
                 })}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -429,7 +435,7 @@ function App() {
       {/* Edit Product Dialog */}
       {editingProduct && (
         <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md mobile-dialog">
             <DialogHeader>
               <DialogTitle>Edit Produk: {editingProduct.nama}</DialogTitle>
             </DialogHeader>

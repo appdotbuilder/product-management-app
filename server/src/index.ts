@@ -3,16 +3,14 @@ import { createHTTPServer } from '@trpc/server/adapters/standalone';
 import 'dotenv/config';
 import cors from 'cors';
 import superjson from 'superjson';
+import { z } from 'zod';
 
-// Import schemas
+// Import schemas and handlers
 import { 
   createProductInputSchema, 
   updateProductInputSchema, 
-  getProductByIdInputSchema, 
-  deleteProductInputSchema 
+  productSchema 
 } from './schema';
-
-// Import handlers
 import { createProduct } from './handlers/create_product';
 import { getProducts } from './handlers/get_products';
 import { getProductById } from './handlers/get_product_by_id';
@@ -31,25 +29,29 @@ const appRouter = router({
     return { status: 'ok', timestamp: new Date().toISOString() };
   }),
   
-  // Product CRUD operations
+  // Create a new product
   createProduct: publicProcedure
     .input(createProductInputSchema)
     .mutation(({ input }) => createProduct(input)),
-    
+  
+  // Get all products
   getProducts: publicProcedure
     .query(() => getProducts()),
-    
+  
+  // Get product by ID
   getProductById: publicProcedure
-    .input(getProductByIdInputSchema)
-    .query(({ input }) => getProductById(input)),
-    
+    .input(z.object({ id: z.number() }))
+    .query(({ input }) => getProductById(input.id)),
+  
+  // Update product
   updateProduct: publicProcedure
     .input(updateProductInputSchema)
     .mutation(({ input }) => updateProduct(input)),
-    
+  
+  // Delete product
   deleteProduct: publicProcedure
-    .input(deleteProductInputSchema)
-    .mutation(({ input }) => deleteProduct(input)),
+    .input(z.object({ id: z.number() }))
+    .mutation(({ input }) => deleteProduct(input.id)),
 });
 
 export type AppRouter = typeof appRouter;
