@@ -9,6 +9,8 @@ import { z } from 'zod';
 import { 
   createProductInputSchema, 
   updateProductInputSchema, 
+  deleteProductInputSchema,
+  getProductByIdInputSchema,
   productSchema 
 } from './schema';
 import { createProduct } from './handlers/create_product';
@@ -40,8 +42,8 @@ const appRouter = router({
   
   // Get product by ID
   getProductById: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .query(({ input }) => getProductById(input.id)),
+    .input(getProductByIdInputSchema)
+    .query(({ input }) => getProductById(input)),
   
   // Update product
   updateProduct: publicProcedure
@@ -50,8 +52,8 @@ const appRouter = router({
   
   // Delete product
   deleteProduct: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(({ input }) => deleteProduct(input.id)),
+    .input(deleteProductInputSchema)
+    .mutation(({ input }) => deleteProduct(input)),
 });
 
 export type AppRouter = typeof appRouter;

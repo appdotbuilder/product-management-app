@@ -16,6 +16,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Form state for creating new products
   const [createFormData, setCreateFormData] = useState<CreateProductInput>({
@@ -78,14 +79,10 @@ function App() {
     setIsLoading(true);
     try {
       const response = await trpc.updateProduct.mutate(editFormData);
-      if (response) {
-        setProducts((prev: Product[]) => 
-          prev.map((p: Product) => p.id === response.id ? response : p)
-        );
-        setEditingProduct(null);
-      } else {
-        console.error('Produk tidak ditemukan atau tidak berhasil diupdate');
-      }
+      setProducts((prev: Product[]) => 
+        prev.map((p: Product) => p.id === response.id ? response : p)
+      );
+      setEditingProduct(null);
     } catch (error) {
       console.error('Gagal mengupdate produk:', error);
     } finally {
@@ -135,6 +132,14 @@ function App() {
     if (profit === 0) return 'secondary';
     return 'destructive';
   };
+
+  const filteredProducts = products.filter((product: Product) => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    return (
+      product.nama.toLowerCase().includes(lowerCaseSearchTerm) ||
+      product.kategori.toLowerCase().includes(lowerCaseSearchTerm)
+    );
+  });
 
   return (
     <div className="container mx-auto p-6 space-y-6 fade-in">
@@ -329,12 +334,20 @@ function App() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {products.length === 0 ? (
+          <div className="mb-4">
+            <Label htmlFor="search-product">Cari Produk</Label>
+            <Input
+              id="search-product"
+              type="text"
+              placeholder="Cari berdasarkan nama atau kategori..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          {filteredProducts.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">📦 Belum ada produk.</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Klik tombol "Tambah Produk" untuk memulai.
-              </p>
+              <p className="text-muted-foreground">Tidak ada produk yang ditemukan.</p>
+              {searchTerm && <p className="text-sm text-muted-foreground mt-1">Coba sesuaikan filter pencarian Anda.</p>}
             </div>
           ) : (
             <div className="mobile-table-responsive">
@@ -352,7 +365,7 @@ function App() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product: Product) => {
+                {filteredProducts.map((product: Product) => {
                   const profit = calculateProfit(product.harga_jual, product.harga_beli);
                   return (
                     <TableRow key={product.id}>
