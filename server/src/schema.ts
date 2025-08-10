@@ -16,11 +16,11 @@ export type Product = z.infer<typeof productSchema>;
 
 // Input schema for creating products
 export const createProductInputSchema = z.object({
-  nama: z.string(),
-  kategori: z.string(),
-  harga_beli: z.number().positive(), // Validate that price is positive
-  harga_jual: z.number().positive(), // Validate that price is positive
-  stok: z.number().int().nonnegative(), // Validate that stock is non-negative integer
+  nama: z.string().min(1, "Nama produk tidak boleh kosong"),
+  kategori: z.string().min(1, "Kategori tidak boleh kosong"),
+  harga_beli: z.number().positive("Harga beli harus positif"), // Validate that price is positive
+  harga_jual: z.number().positive("Harga jual harus positif"), // Validate that price is positive
+  stok: z.number().int().nonnegative("Stok tidak boleh negatif"), // Validate that stock is non-negative integer
   deskripsi: z.string().nullable() // Explicit null allowed, undefined not allowed
 });
 
@@ -29,11 +29,11 @@ export type CreateProductInput = z.infer<typeof createProductInputSchema>;
 // Input schema for updating products
 export const updateProductInputSchema = z.object({
   id: z.number(),
-  nama: z.string().optional(), // Optional = field can be undefined (omitted)
-  kategori: z.string().optional(),
-  harga_beli: z.number().positive().optional(),
-  harga_jual: z.number().positive().optional(),
-  stok: z.number().int().nonnegative().optional(),
+  nama: z.string().min(1, "Nama produk tidak boleh kosong").optional(), // Optional = field can be undefined (omitted)
+  kategori: z.string().min(1, "Kategori tidak boleh kosong").optional(),
+  harga_beli: z.number().positive("Harga beli harus positif").optional(),
+  harga_jual: z.number().positive("Harga jual harus positif").optional(),
+  stok: z.number().int().nonnegative("Stok tidak boleh negatif").optional(),
   deskripsi: z.string().nullable().optional() // Can be null or undefined
 });
 
@@ -61,6 +61,13 @@ export const deleteProductResponseSchema = z.object({
 
 export type DeleteProductResponse = z.infer<typeof deleteProductResponseSchema>;
 
+// New: Input schema for searching products
+export const searchProductsInputSchema = z.object({
+  query: z.string().optional(),
+});
+
+export type SearchProductsInput = z.infer<typeof searchProductsInputSchema>;
+
 // Sale schema
 export const saleSchema = z.object({
   id: z.number(),
@@ -82,7 +89,7 @@ export const saleItemSchema = z.object({
 
 export type SaleItem = z.infer<typeof saleItemSchema>;
 
-// Schema for joined sale items (includes product name)
+// Schema for joined sale items (includes product name for display)
 export const saleItemWithProductNameSchema = z.object({
   product_id: z.number(),
   qty: z.number().int().nonnegative(),
@@ -100,15 +107,14 @@ export const saleDetailSchema = saleSchema.extend({
 
 export type SaleDetail = z.infer<typeof saleDetailSchema>;
 
-// Input schema for creating a new sale (for future use, but good to define)
+// New: Input schema for creating a new sale transaction
 export const createSaleInputSchema = z.object({
-  kasir: z.string(),
+  kasir: z.string().min(1, "Nama kasir tidak boleh kosong"),
   items: z.array(z.object({
-    product_id: z.number(),
-    qty: z.number().int().positive(),
-    harga_jual: z.number().positive(), // Price at the time of sale
-    // subtotal can be calculated on backend
-  })).min(1, "At least one item is required for a sale"),
+    product_id: z.number().int().positive("Product ID harus positif"),
+    qty: z.number().int().min(1, "Kuantitas minimal 1"),
+    harga_jual: z.number().positive("Harga jual harus positif"),
+  })).min(1, "Setidaknya satu item diperlukan untuk transaksi"),
 });
 
 export type CreateSaleInput = z.infer<typeof createSaleInputSchema>;
