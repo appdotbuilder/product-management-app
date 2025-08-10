@@ -60,3 +60,55 @@ export const deleteProductResponseSchema = z.object({
 });
 
 export type DeleteProductResponse = z.infer<typeof deleteProductResponseSchema>;
+
+// Sale schema
+export const saleSchema = z.object({
+  id: z.number(),
+  tanggal: z.coerce.date(),
+  total: z.number(),
+  kasir: z.string(),
+});
+
+export type Sale = z.infer<typeof saleSchema>;
+
+export const saleItemSchema = z.object({
+  id: z.number(),
+  sale_id: z.number(),
+  product_id: z.number(),
+  qty: z.number().int().nonnegative(),
+  harga_jual: z.number().positive(),
+  subtotal: z.number().positive(),
+});
+
+export type SaleItem = z.infer<typeof saleItemSchema>;
+
+// Schema for joined sale items (includes product name)
+export const saleItemWithProductNameSchema = z.object({
+  product_id: z.number(),
+  qty: z.number().int().nonnegative(),
+  harga_jual: z.number().positive(),
+  subtotal: z.number().positive(),
+  nama_produk: z.string(), // Added from products table
+});
+
+export type SaleItemWithProductName = z.infer<typeof saleItemWithProductNameSchema>;
+
+// Full sale detail schema for frontend consumption
+export const saleDetailSchema = saleSchema.extend({
+  items: z.array(saleItemWithProductNameSchema),
+});
+
+export type SaleDetail = z.infer<typeof saleDetailSchema>;
+
+// Input schema for creating a new sale (for future use, but good to define)
+export const createSaleInputSchema = z.object({
+  kasir: z.string(),
+  items: z.array(z.object({
+    product_id: z.number(),
+    qty: z.number().int().positive(),
+    harga_jual: z.number().positive(), // Price at the time of sale
+    // subtotal can be calculated on backend
+  })).min(1, "At least one item is required for a sale"),
+});
+
+export type CreateSaleInput = z.infer<typeof createSaleInputSchema>;

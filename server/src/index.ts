@@ -11,13 +11,15 @@ import {
   updateProductInputSchema, 
   deleteProductInputSchema,
   getProductByIdInputSchema,
-  productSchema 
+  productSchema,
+  saleDetailSchema
 } from './schema';
 import { createProduct } from './handlers/create_product';
 import { getProducts } from './handlers/get_products';
 import { getProductById } from './handlers/get_product_by_id';
 import { updateProduct } from './handlers/update_product';
 import { deleteProduct } from './handlers/delete_product';
+import { getSales } from './handlers/get_sales';
 
 const t = initTRPC.create({
   transformer: superjson,
@@ -54,6 +56,11 @@ const appRouter = router({
   deleteProduct: publicProcedure
     .input(deleteProductInputSchema)
     .mutation(({ input }) => deleteProduct(input)),
+
+  // Sales operations
+  getSales: publicProcedure
+    .output(z.array(saleDetailSchema))
+    .query(() => getSales()),
 });
 
 export type AppRouter = typeof appRouter;
